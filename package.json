@@ -1,0 +1,37 @@
+{
+  "name": "combox",
+  "version": "1.0.0-alpha",
+  "description": "A HyperDB interface for implementing directories, inboxes, and outboxes.",
+  "main": "index.js",
+  "scripts": {
+    "test": "standard && mocha && npm audit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/garbados/combox.git"
+  },
+  "keywords": [
+    "dat",
+    "hyperdb",
+    "p2p"
+  ],
+  "author": "Diana Thayer <garbados@gmail.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/garbados/combox/issues"
+  },
+  "homepage": "https://github.com/garbados/combox#readme",
+  "dependencies": {
+    "comdb": "^1.0.3-alpha",
+    "dat-swarm-defaults": "^1.0.1",
+    "discovery-swarm": "^5.1.2",
+    "hyperdb": "^3.4.0",
+    "pouchdb": "^7.0.0",
+    "random-access-memory": "^3.0.0"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0",
+    "rimraf": "^2.6.2",
+    "standard": "^11.0.1"
+  }
+}
