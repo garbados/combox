@@ -6,11 +6,7 @@
 [![NPM Version](https://img.shields.io/npm/v/combox.svg?style=flat-square)](https://www.npmjs.com/package/combox)
 [![JS Standard Style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 
-A p2p feed and messaging system implemented with [HyperDB](https://github.com/mafintosh/hyperdb) and [PouchDB](https://github.com/pouchdb/pouchdb).
-
-ComBox allows you to delete information from shared feeds by a process called *regeneration* in which a host abandons the peer swarm, deletes the feed's metadata, reconstructs it from saved content, and broadcasts it to a new swarm at a new link. ComBox provides a Directory class which helps to manage these changing links so that peers can follow archives even as they move, and an Inbox class which creates a shared writable archive that peers can use to leave messages for the host or each other.
-
-TODO demo
+A [PouchDB](https://pouchdb.com/) plugin that mirrors the database with a [Dat](https://datproject.org/) archive using Beaker's [DatArchive](https://beakerbrowser.com/docs/apis/dat) API. As a result, you can use ComBox in the browser with [Beaker](https://beakerbrowser.com/)! To use it in NodeJS, you'll need [node-dat-archive](https://github.com/beakerbrowser/node-dat-archive).
 
 ## Install
 
@@ -23,67 +19,47 @@ $ npm i combox
 Once installed, you can `require()` it in your projects:
 
 ```javascript
-const {
-	ComBox,
-	Inbox,
-	Directory
-} = require('combox')
+const PouchDB = require('PouchDB')
+const ComBox = require('combox')
+PouchDB.plugin(ComBox)
 
-const box = new ComBox({ ... })
+const db = new PouchDB('combox')
+await db.setupDatArchive()
 ```
+
+Once the archive has been set up, its contents will be automatically mirrored to PouchDB.
+
+If you cannot write to the attached archive, any calls to destructive methods like `.bulkDocs` will fail. Read-only methods like `.get()` and `.query()` will continue to operate normally.
 
 ## Usage
 
-A quick sketch of the exposed classes and their APIs:
+### ComBox
 
-```
-ComBox
-.constructor(options = {})
-- pouch: custom pouchdb instance
-- PouchDB: custom pouchdb constructor
-- pouchPath: pouchdb constructor name parameter
-- pouchOptions: pouchdb constructor options parameter
-- couchUrl: alternate pouchdb constructor name parameter.
-			prioritized over pouchPath.
-- hyper: custom hyperdb instance 
-- hyperStorage: hyperdb constructor storage path parameter
-- hyperOptions: hyperdb constructor options parameter
-- HyperDB: custom hyperdb constructor
-- key: archive discovery key / dat url
-.get(key): retrieve doc (from pouchdb? from hyperdb?)
-.put(key, value): update doc (in hyperdb? in pouchdb?)
-.del(key, { soft }): remove doc. if soft:true, do not regenerate.
-.delete: del alias
-.rm: del alias
-.remove: del alias
-.regenerate(): destroy hyperdb and recreate from pouchdb.
-			   fires a 'regeneration' event once complete.
-.leave(): exit swarm
-.close(): exit swarm and close hyperdb feeds
-.destroy(): exit swarm, destroy hyperdb, and destroy pouchdb
-.pouch: accessor for attached pouchdb instance
-.hyper: accessor for attached hyperdb
-._onConnection(peer): fired on connect; no-op
-._onChange(nodes): fired on hyperdb update; no-op
-._encoding(obj) -> buffer: encodes content for hyperdb; no-op
-._decoding(buf) -> object: decodes content from hyperdb; no-op
+The ComBox plugin adds and modifies some methods. They are documented here:
 
-Inbox
-._onConnection(peer): authenticates with hyperdb like cabal does
+#### `async .setupDatArchive([options])`
 
-Directory
-.getInbox(name)
-.getOutbox(name)
-.addInbox(name, meta = {}, options = {}): creates inbox; adds link to directory
-.addOutbox(name, meta = {}, options = {}): creates combox; adds link to directory
-.updateInbox(name, meta = {})
-.updateOutbox(name, meta = {})
-.rmInbox(name): destroys inbox; removes link from directory
-.rmOutbox(name): destroys combox; removes link from directory
-._onRegeneration(name, box):
-	fires when an archive regenerates.
-	by default, updates directory with new link.
-```
+Creates, loads, or simply attaches an archive to the database, and initializes the mirroring process.
+
+Parameters:
+
+- `options`: Options object.
+- `options.archive`: A specific archive to mirror. Must have been created using DatArchive.
+- `options.DatArchive`: A DatArchive constructor. Use this parameter with [node-dat-archive](https://github.com/beakerbrowser/node-dat-archive) if you are writing a server-side application.
+- `options.options`: Options for DatArchive when it constructs the archive. Only useful when the constructor from [node-dat-archive](https://github.com/beakerbrowser/node-dat-archive) is used, as Beaker's does not take options.
+- `options.url`: A Dat URL to follow. Following an archive you cannot write to will block destructive methods like `.bulkDocs()`.
+
+#### `async .bulkDocs(docs, [options], [callback])`
+
+ComBox wraps [PouchDB#bulkDocs](https://pouchdb.com/api.html#batch_create) to mirror writes, including deletes, to the archive. Because of how PouchDB performs writes internally, wrapping this method causes other methods like `.put`, `.post`, and `.remove` to also affect the archive.
+
+The parameters are unchanged from the original.
+
+#### `async .destroy([options], [callback])`
+
+Wraps [PouchDB#destroy](https://pouchdb.com/api.html#delete_database) to also stop sharing the associated archive and destroy any associated files.
+
+The parameters are unchanged from the original.
 
 ## Development
 

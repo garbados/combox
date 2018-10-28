@@ -1,10 +1,10 @@
 {
   "name": "combox",
   "version": "1.0.0-alpha",
-  "description": "A HyperDB interface for implementing directories, inboxes, and outboxes.",
+  "description": "A PouchDB plugin that mirrors a database with a Dat archive.",
   "main": "index.js",
   "scripts": {
-    "test": "standard && mocha && npm audit"
+    "test": "standard && mocha test.js && npm audit"
   },
   "repository": {
     "type": "git",
@@ -12,7 +12,6 @@
   },
   "keywords": [
     "dat",
-    "hyperdb",
     "p2p"
   ],
   "author": "Diana Thayer <garbados@gmail.com>",
@@ -21,17 +20,12 @@
     "url": "https://github.com/garbados/combox/issues"
   },
   "homepage": "https://github.com/garbados/combox#readme",
-  "dependencies": {
-    "comdb": "^1.0.3-alpha",
-    "dat-swarm-defaults": "^1.0.1",
-    "discovery-swarm": "^5.1.2",
-    "hyperdb": "^3.4.0",
-    "pouchdb": "^7.0.0",
-    "random-access-memory": "^3.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "mocha": "^5.2.0",
-    "rimraf": "^2.6.2",
-    "standard": "^11.0.1"
+    "node-dat-archive": "^2.2.0",
+    "pouchdb": "^7.0.0",
+    "rimraf": "^2.6.3",
+    "standard": "^12.0.1"
   }
 }
